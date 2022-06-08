@@ -2,11 +2,11 @@ import Router from "koa-router";
 
 import errorHandler from "./middleware/err";
 import tag from "./tag/tag.route";
-// const user = require("./user/route");
+import user from "./user/user.route";
 // const article = require("./article/route");
 
 export default new Router({ prefix: "/api" })
   .use(errorHandler)
-  .use("/tags", tag.routes());
-// .use(["/user", "/users"], user.routes())
+  .use("/tags", tag.routes())
+  .use(["/user", "/users"], user.routes());
 // .use("/articles", article.routes());

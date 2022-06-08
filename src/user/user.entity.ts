@@ -1,5 +1,13 @@
-import { Column, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  VersionColumn,
+} from "typeorm";
 
+@Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -10,30 +18,33 @@ export class User {
   @Column()
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   bio: string;
 
-  @Column()
+  @Column({ nullable: true })
   image: string;
 
-  @Column()
+  @Column({ nullable: true })
   phone: string;
 
-  @Column()
+  @Column({ nullable: true })
   token: string;
 
-  @Column()
+  @Column({ nullable: true })
   organization: string;
 
-  @Column()
+  @Column({ nullable: true })
   hash: string;
 
-  @Column()
+  @Column({ nullable: true })
   salt: string;
 
-  @Column()
+  @CreateDateColumn()
   createdAt: string;
 
-  @Column()
+  @UpdateDateColumn()
   updateddAt: string;
+
+  @VersionColumn({ nullable: true })
+  version: number;
 }
