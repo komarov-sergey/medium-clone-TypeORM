@@ -77,6 +77,16 @@ export class UserController {
     };
   }
 
+  public static toCurrentUserJSON(user) {
+    return {
+      username: user.username,
+      email: user.email,
+      token: user.token,
+      bio: user.bio,
+      image: user.image,
+    };
+  }
+
   public static async loginUser(email: string, password: string) {
     let user = await UserRepository.findOneBy({ email });
 

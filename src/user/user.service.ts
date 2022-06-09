@@ -1,4 +1,5 @@
-import { UserController } from "./user.repository";
+import { UserController, UserRepository } from "./user.repository";
+import { User } from "./user.entity";
 
 export async function registerUser(ctx) {
   let newUser;
@@ -40,46 +41,41 @@ export async function login(ctx) {
   };
 }
 
-// export async function getCurrentUser(ctx) {
-//   let user;
-//   try {
-//   } catch (e) {
-//     ctx.status = 422;
+export async function getCurrentUser(ctx) {
+  try {
+  } catch (e) {
+    ctx.status = 422;
 
-//     return {
-//       errors: {
-//         body: ["Error in getCurrentUser()"],
-//       },
-//     };
-//   }
+    return {
+      errors: {
+        body: ["Error in getCurrentUser()"],
+      },
+    };
+  }
 
-//   return {
-//     user: ctx.state.user.toCurrentUserJSON(),
-//   };
-// }
+  return {
+    user: UserController.toCurrentUserJSON(ctx.state.user),
+  };
+}
 
-// export async function updateCurrentUser(ctx) {
-//   let user;
-//   try {
-//     user = await User.findOneAndUpdate(
-//       { _id: ctx.state.user._id.toString() },
-//       { ...ctx.request.body.user },
-//       {
-//         new: true,
-//         upsert: true,
-//       }
-//     );
-//   } catch (e) {
-//     ctx.status = 422;
+export async function updateCurrentUser(ctx) {
+  let user;
+  try {
+    user = await UserRepository.save({
+      ...ctx.state.user,
+      ...ctx.request.body.user,
+    });
+  } catch (e) {
+    ctx.status = 422;
 
-//     return {
-//       errors: {
-//         body: ["Error in updateCurrentUser()"],
-//       },
-//     };
-//   }
+    return {
+      errors: {
+        body: ["Error in updateCurrentUser()"],
+      },
+    };
+  }
 
-//   return {
-//     user: user.toCurrentUserJSON(),
-//   };
-// }
+  return {
+    user: UserController.toCurrentUserJSON(user),
+  };
+}
