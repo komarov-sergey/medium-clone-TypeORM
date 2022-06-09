@@ -1,17 +1,9 @@
-import { AppDataSource } from "../data-source";
-import { User } from "./user.entity";
 import { UserController } from "./user.repository";
-
-const userRepository = AppDataSource.getRepository(User);
 
 export async function registerUser(ctx) {
   let newUser;
   let body = ctx.request.body.user;
   try {
-    // newUser = userRepository.create({ ...body });
-    // user.setPassword(body.password);
-    // await userRepository.save(newUser);
-
     newUser = await UserController.registerUser(body);
   } catch (e) {
     ctx.status = 422;
@@ -24,34 +16,29 @@ export async function registerUser(ctx) {
   }
 
   return {
-    newUser,
+    user: UserController.toRegisterJSON(newUser),
   };
 }
 
-// export async function login(ctx) {
-//   let user;
-//   let { email, password } = ctx.request.body.user;
-//   try {
-//     user = await User.findOne({ email });
+export async function login(ctx) {
+  let user;
+  let { email, password } = ctx.request.body.user;
+  try {
+    user = await UserController.loginUser(email, password);
+  } catch (e) {
+    ctx.status = 422;
 
-//     if (!user || !user.validPassword(password)) throw new Error();
+    return {
+      errors: {
+        body: ["Error in login()"],
+      },
+    };
+  }
 
-//     user.token = user.generateJWT();
-//     user.save();
-//   } catch (e) {
-//     ctx.status = 422;
-
-//     return {
-//       errors: {
-//         body: ["Error in login()"],
-//       },
-//     };
-//   }
-
-//   return {
-//     user: user.toLoginJSON(),
-//   };
-// }
+  return {
+    user: UserController.toLoginJSON(user),
+  };
+}
 
 // export async function getCurrentUser(ctx) {
 //   let user;
