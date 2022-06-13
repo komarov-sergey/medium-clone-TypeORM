@@ -6,4 +6,4 @@ import * as controller from "./article.controller";
 
 export default new Router()
   .post("/", auth, controller.createArticle)
-  .get("/", controller.getArticle);
+  .get("/:slug", controller.getArticle);

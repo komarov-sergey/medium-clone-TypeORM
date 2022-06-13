@@ -2,11 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
 } from "typeorm";
 
+import { Article } from "../article/article.entity";
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -47,4 +49,7 @@ export class User {
 
   @VersionColumn({ nullable: true })
   version: number;
+
+  @OneToMany(() => Article, (article) => article.author)
+  articles: Article[];
 }
