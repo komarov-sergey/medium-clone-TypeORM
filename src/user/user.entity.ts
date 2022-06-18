@@ -6,50 +6,50 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
-} from "typeorm";
+} from 'typeorm'
 
-import { Article } from "../article/article.entity";
+import { Article } from '../article/article.entity'
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number
 
-  @Column()
-  username: string;
+  @Column({ unique: true })
+  username: string
 
-  @Column()
-  email: string;
-
-  @Column({ nullable: true })
-  bio: string;
+  @Column({ unique: true })
+  email: string
 
   @Column({ nullable: true })
-  image: string;
+  bio: string
 
   @Column({ nullable: true })
-  phone: string;
+  image: string
 
   @Column({ nullable: true })
-  token: string;
+  phone: string
 
   @Column({ nullable: true })
-  organization: string;
+  token: string
 
   @Column({ nullable: true })
-  hash: string;
+  organization: string
 
   @Column({ nullable: true })
-  salt: string;
+  hash: string
+
+  @Column({ nullable: true })
+  salt: string
 
   @CreateDateColumn()
-  createdAt: string;
+  createdAt: string
 
   @UpdateDateColumn()
-  updateddAt: string;
+  updateddAt: string
 
   @VersionColumn({ nullable: true })
-  version: number;
+  version: number
 
-  @OneToMany(() => Article, (article) => article.author)
-  articles: Article[];
+  @OneToMany(() => Article, article => article.author)
+  articles: Article[]
 }

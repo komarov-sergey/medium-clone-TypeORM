@@ -1,32 +1,32 @@
-import { AppDataSource } from "../data-source";
-import crypto from "crypto";
-import jwt from "jsonwebtoken";
+import { AppDataSource } from '../data-source'
+import crypto from 'crypto'
+import jwt from 'jsonwebtoken'
 
-import { User } from "./user.entity";
+import { User } from './user.entity'
 
-export const UserRepository = AppDataSource.getRepository(User);
+export const UserRepository = AppDataSource.getRepository(User)
 
 export class UserController {
-  private static salt = "salt";
-  private static secret = "secret";
+  private static salt = 'salt'
+  private static secret = 'secret'
 
   private static setPassword(user, pass) {
     const hash = crypto
-      .pbkdf2Sync(pass, this.salt, 10000, 512, "sha512")
-      .toString("hex");
+      .pbkdf2Sync(pass, this.salt, 10000, 512, 'sha512')
+      .toString('hex')
 
-    user.hash = hash;
-    user.salt = this.salt;
+    user.hash = hash
+    user.salt = this.salt
 
-    return user;
+    return user
   }
 
   private static generateJWT(user) {
-    const today = new Date();
-    const exp = new Date(today);
+    const today = new Date()
+    const exp = new Date(today)
 
     // 60 days
-    exp.setDate(today.getDate() + 60);
+    exp.setDate(today.getDate() + 60)
 
     user.token = jwt.sign(
       {
@@ -35,26 +35,26 @@ export class UserController {
         exp: parseInt((exp.getTime() / 1000).toString()),
       },
       this.secret
-    );
+    )
 
-    return user;
+    return user
   }
 
   public static validPassword(pass: string, dbHash: string): boolean {
     const hash = crypto
-      .pbkdf2Sync(pass, this.salt, 10000, 512, "sha512")
-      .toString("hex");
+      .pbkdf2Sync(pass, this.salt, 10000, 512, 'sha512')
+      .toString('hex')
 
-    return hash === dbHash;
+    return hash === dbHash
   }
 
-  public static registerUser(userData) {
-    let newUser = UserRepository.create({ ...userData });
+  public static async registerUser(userData) {
+    let newUser = await UserRepository.create({ ...userData })
 
-    this.setPassword(newUser, userData.password);
-    this.generateJWT(newUser);
+    this.setPassword(newUser, userData.password)
+    this.generateJWT(newUser)
 
-    return UserRepository.save(newUser);
+    return UserRepository.save(newUser)
   }
 
   public static toRegisterJSON(user) {
@@ -64,7 +64,7 @@ export class UserController {
       phone: user.phone,
       token: user.token,
       createdAt: user.createdAt,
-    };
+    }
   }
 
   public static toLoginJSON(user) {
@@ -74,7 +74,7 @@ export class UserController {
       token: user.token,
       bio: user.bio,
       image: user.image,
-    };
+    }
   }
 
   public static toCurrentUserJSON(user) {
@@ -84,15 +84,16 @@ export class UserController {
       token: user.token,
       bio: user.bio,
       image: user.image,
-    };
+    }
   }
 
   public static async loginUser(email: string, password: string) {
-    let user = await UserRepository.findOneBy({ email });
+    let user = await UserRepository.findOneBy({ email })
 
-    if (!user || !this.validPassword(password, user.hash)) throw new Error();
-    this.generateJWT(user);
+    if (!user || !this.validPassword(password, user.hash))
+      throw new Error('Not valid email or password')
+    this.generateJWT(user)
 
-    return UserRepository.save(user);
+    return UserRepository.save(user)
   }
 }

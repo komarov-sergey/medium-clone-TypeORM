@@ -844,6 +844,11 @@ postgres-interval@^1.1.0:
   dependencies:
     xtend "^4.0.0"
 
+pratica@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/pratica/-/pratica-2.0.3.tgz#77eae84838d78c907f118581f8b8cd2507955bdc"
+  integrity sha512-MXOO7NtsxjZBInCPK7iFLEgthZ0EH9QJEBmE6xF6+0rA71IS2HLITV8LJ1ByrTfzRVSqfvZMOmFqkEhkZ/nqSw==
+
 qs@6.9.3:
   version "6.9.3"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.3.tgz#bfadcd296c2d549f1dffa560619132c977f5008e"

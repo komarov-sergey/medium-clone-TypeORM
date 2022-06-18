@@ -14,6 +14,7 @@
       "koa-body": "^5.0.0",
       "koa-router": "^10.1.1",
       "pg": "^8.4.0",
+      "pratica": "^2.0.3",
       "reflect-metadata": "^0.1.13",
       "slug": "^5.3.0",
       "typeorm": "0.3.6"

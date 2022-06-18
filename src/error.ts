@@ -8,3 +8,13 @@ export class AuthError extends Error {
     this.status = 401;
   }
 }
+export class UnexpectedError extends Error {
+  public code;
+  public status;
+
+  constructor(data) {
+    super(data);
+    this.code = data.code || "UNEXPECTED_ERROR";
+    this.status = 422;
+  }
+}
