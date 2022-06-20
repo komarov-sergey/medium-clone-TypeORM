@@ -1,41 +1,17 @@
-import { ArticleController, ArticleRepository } from "./article.repository";
+import { ArticleController, ArticleRepository } from './article.repository'
 
-export async function createArticle(ctx) {
-  let article;
-  let body = ctx.request.body.article;
-  try {
-    article = await ArticleController.createArticle(body);
-  } catch (e) {
-    ctx.status = 422;
-
-    return {
-      errors: {
-        body: ["Error in createArticle()"],
-      },
-    };
-  }
+export async function createArticle(article) {
+  const newArticle = await ArticleController.createArticle(article)
 
   return {
-    article: ArticleController.toCreateJSON(article),
-  };
+    article: ArticleController.toCreateJSON(newArticle),
+  }
 }
 
-export async function getArticle(ctx) {
-  let article;
-  let slug = ctx.params.slug;
-  try {
-    article = await ArticleRepository.findOneBy({ slug });
-  } catch (e) {
-    ctx.status = 422;
-
-    return {
-      errors: {
-        body: ["Error in getArticle()"],
-      },
-    };
-  }
+export async function getArticle(slug) {
+  const article = await ArticleRepository.findOneBy({ slug })
 
   return {
     article: ArticleController.toGetJSON(article),
-  };
+  }
 }
