@@ -1,8 +1,7 @@
 import * as service from './tag.service'
 
-export async function getTags(ctx) {
-  await service
-    .getTag()
+function handlePromise(promise, ctx) {
+  return promise
     .then(data => (ctx.body = data))
     .catch(err => {
       err => {
@@ -12,6 +11,10 @@ export async function getTags(ctx) {
     })
 }
 
+export async function getTags(ctx) {
+  await handlePromise(service.getTag(), ctx)
+}
+
 export async function postTags(ctx) {
   const {
     request: {
@@ -19,13 +22,5 @@ export async function postTags(ctx) {
     },
   } = ctx
 
-  await service
-    .postTags(name)
-    .then(data => (ctx.body = data))
-    .catch(err => {
-      err => {
-        ctx.status = 422
-        ctx.body = { errors: { body: [err.toString()] } }
-      }
-    })
+  await handlePromise(service.postTags(name), ctx)
 }

@@ -7,7 +7,8 @@ export async function registerUser(user) {
 
 export async function login(email, password) {
   const user = await UserController.loginUser(email, password)
-  return UserController.toLoginJSON(user)
+  const newUser = UserController.toLoginJSON(user)
+  return { user: newUser }
 }
 
 export async function getCurrentUser(user) {

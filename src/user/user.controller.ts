@@ -1,15 +1,8 @@
 import * as service from './user.service'
 import { PG_UNIQUE_VIOLATION } from '../utils/pgErrorCodes'
 
-export async function registerUser(ctx) {
-  const {
-    request: {
-      body: { user },
-    },
-  } = ctx
-
-  await service
-    .registerUser(user)
+function handlePromise(promise, ctx) {
+  return promise
     .then(data => (ctx.body = data))
     .catch(err => {
       ctx.status = 422
@@ -21,6 +14,16 @@ export async function registerUser(ctx) {
     })
 }
 
+export async function registerUser(ctx) {
+  const {
+    request: {
+      body: { user },
+    },
+  } = ctx
+
+  await handlePromise(service.registerUser(user), ctx)
+}
+
 export async function login(ctx) {
   let {
     request: {
@@ -30,13 +33,7 @@ export async function login(ctx) {
     },
   } = ctx
 
-  await service
-    .login(email, password)
-    .then(data => (ctx.body = data))
-    .catch(err => {
-      ctx.status = 422
-      ctx.body = { errors: { body: [err.toString()] } }
-    })
+  await handlePromise(service.login(email, password), ctx)
 }
 
 export function getCurrentUser(ctx) {
@@ -44,13 +41,7 @@ export function getCurrentUser(ctx) {
     state: { user },
   } = ctx
 
-  service
-    .getCurrentUser(user)
-    .then(data => (ctx.body = data))
-    .catch(err => {
-      ctx.status = 422
-      ctx.body = { errors: { body: [err.toString()] } }
-    })
+  handlePromise(service.getCurrentUser(user), ctx)
 }
 
 export async function updateCurrentUser(ctx) {
@@ -61,11 +52,5 @@ export async function updateCurrentUser(ctx) {
     },
   } = ctx
 
-  await service
-    .updateCurrentUser(currentUser, user)
-    .then(data => (ctx.body = data))
-    .catch(err => {
-      ctx.status = 422
-      ctx.body = { errors: { body: [err.toString()] } }
-    })
+  await handlePromise(service.updateCurrentUser(currentUser, user), ctx)
 }
