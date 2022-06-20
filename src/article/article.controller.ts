@@ -14,9 +14,10 @@ export async function createArticle(ctx) {
     request: {
       body: { article },
     },
+    state: { user },
   } = ctx
 
-  await handlePromise(service.createArticle(article), ctx)
+  await handlePromise(service.createArticle(article, user), ctx)
 }
 
 export async function getArticle(ctx) {

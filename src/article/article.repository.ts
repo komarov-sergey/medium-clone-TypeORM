@@ -1,21 +1,22 @@
-import { AppDataSource } from "../data-source";
-import slug from "slug";
+import { AppDataSource } from '../data-source'
+import slug from 'slug'
 
-import { Article } from "./article.entity";
+import { Article } from './article.entity'
+import { SimpleConsoleLogger } from 'typeorm'
 
-export const ArticleRepository = AppDataSource.getRepository(Article);
+export const ArticleRepository = AppDataSource.getRepository(Article)
 
 export class ArticleController {
   private static setSlug(title) {
     return (
-      slug(title) + "-" + ((Math.random() * Math.pow(36, 6)) | 0).toString(36)
-    );
+      slug(title) + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36)
+    )
   }
 
-  public static createArticle(data) {
-    const slug = this.setSlug(data.title);
+  public static createArticle(data, user) {
+    const slug = this.setSlug(data.title)
 
-    return ArticleRepository.save({ ...data, slug });
+    return ArticleRepository.save({ ...data, slug, author: user })
   }
 
   public static toCreateJSON(article) {
@@ -24,7 +25,7 @@ export class ArticleController {
       description: article.description,
       body: article.body,
       tagList: article.tagList,
-    };
+    }
   }
 
   public static toGetJSON(article) {
@@ -40,6 +41,6 @@ export class ArticleController {
       //TODO add this fields
       // favorited: false,
       // favoritesCount: 0,
-    };
+    }
   }
 }

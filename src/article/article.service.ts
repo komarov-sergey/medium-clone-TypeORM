@@ -1,7 +1,7 @@
 import { ArticleController, ArticleRepository } from './article.repository'
 
-export async function createArticle(article) {
-  const newArticle = await ArticleController.createArticle(article)
+export async function createArticle(article, user) {
+  const newArticle = await ArticleController.createArticle(article, user)
 
   return {
     article: ArticleController.toCreateJSON(newArticle),
