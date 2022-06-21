@@ -87,6 +87,15 @@ export class UserController {
     }
   }
 
+  public static toProfileJSON(user, id) {
+    return {
+      username: user.username,
+      bio: user.bio,
+      image: user.image,
+      following: user ? this.isFollowing(user, id) : false,
+    }
+  }
+
   public static async loginUser(email: string, password: string) {
     let user = await UserRepository.findOneBy({ email })
 
@@ -95,5 +104,18 @@ export class UserController {
     this.generateJWT(user)
 
     return UserRepository.save(user)
+  }
+
+  public static async follow(user, id) {
+    if (user.following.indexOf(id) === -1)
+      user.following = user.following.concat(id)
+
+    return UserRepository.save(user)
+  }
+
+  public static isFollowing(user, id) {
+    return user.following.some(
+      followId => followId.toString() === id.toString()
+    )
   }
 }

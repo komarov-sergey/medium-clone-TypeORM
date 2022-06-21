@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -23,7 +24,10 @@ export class User {
   @Column({ nullable: true })
   bio: string
 
-  @Column({ nullable: true })
+  @Column({
+    nullable: true,
+    default: 'https://static.productionready.io/images/smiley-cyrus.jpg',
+  })
   image: string
 
   @Column({ nullable: true })
@@ -52,4 +56,11 @@ export class User {
 
   @OneToMany(() => Article, article => article.author)
   articles: Article[]
+
+  @OneToMany(() => User, user => user.id)
+  following: User[]
+
+  // TODO many To many?
+  @OneToMany(() => Article, article => article.author)
+  favorites: Article[]
 }
