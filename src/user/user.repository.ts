@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 
 import { User } from './user.entity'
+import { DatabaseError } from '../error'
 
 export const UserRepository = AppDataSource.getRepository(User)
 
@@ -49,41 +50,88 @@ export class UserController {
   }
 
   public static async registerUser(userData) {
-    let newUser = await UserRepository.create({ ...userData })
+    try {
+      let newUser = UserRepository.create({ ...userData })
+      this.setPassword(newUser, userData.password)
+      this.generateJWT(newUser)
+      await UserRepository.save(newUser)
 
-    this.setPassword(newUser, userData.password)
-    this.generateJWT(newUser)
-
-    return UserRepository.save(newUser)
-  }
-
-  public static toRegisterJSON(user) {
-    return {
-      username: user.username,
-      email: user.email,
-      phone: user.phone,
-      token: user.token,
-      createdAt: user.createdAt,
+      return this.toRegisterJSON(newUser)
+    } catch (e) {
+      return Promise.reject(new DatabaseError(e).toString())
     }
   }
 
-  public static toLoginJSON(user) {
+  public static async loginUser(email: string, password: string) {
+    try {
+      let user = await UserRepository.findOneBy({ email })
+
+      if (!user || !this.validPassword(password, user.hash))
+        return Promise.reject('Not valid email or password')
+
+      this.generateJWT(user)
+      await UserRepository.save(user)
+
+      return this.toLoginJSON(user)
+    } catch (e) {
+      return Promise.reject(new DatabaseError(e).toString())
+    }
+  }
+
+  public static async getCurrentUser(user) {
+    try {
+      return this.toCurrentUserJSON(user)
+    } catch (e) {
+      return Promise.reject(new DatabaseError(e).toString())
+    }
+  }
+
+  public static async updateCurrentUser(currentUser, user) {
+    try {
+      const updatedUser = await UserRepository.save({
+        ...currentUser,
+        ...user,
+      })
+
+      return this.toCurrentUserJSON(updatedUser)
+    } catch (e) {
+      return Promise.reject(new DatabaseError(e).toString())
+    }
+  }
+
+  static toRegisterJSON(newUser) {
     return {
-      username: user.username,
-      email: user.email,
-      token: user.token,
-      bio: user.bio,
-      image: user.image,
+      user: {
+        username: newUser.username,
+        email: newUser.email,
+        phone: newUser.phone,
+        token: newUser.token,
+        createdAt: newUser.createdAt,
+      },
+    }
+  }
+
+  static toLoginJSON(user) {
+    return {
+      user: {
+        username: user.username,
+        email: user.email,
+        token: user.token,
+        bio: user.bio,
+        image: user.image,
+      },
     }
   }
 
   public static toCurrentUserJSON(user) {
     return {
-      username: user.username,
-      email: user.email,
-      token: user.token,
-      bio: user.bio,
-      image: user.image,
+      user: {
+        username: user.username,
+        email: user.email,
+        token: user.token,
+        bio: user.bio,
+        image: user.image,
+      },
     }
   }
 
@@ -94,16 +142,6 @@ export class UserController {
       image: user.image,
       following: user ? this.isFollowing(user, id) : false,
     }
-  }
-
-  public static async loginUser(email: string, password: string) {
-    let user = await UserRepository.findOneBy({ email })
-
-    if (!user || !this.validPassword(password, user.hash))
-      throw new Error('Not valid email or password')
-    this.generateJWT(user)
-
-    return UserRepository.save(user)
   }
 
   public static async follow(user, id) {

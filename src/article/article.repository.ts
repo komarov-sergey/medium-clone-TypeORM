@@ -3,6 +3,7 @@ import slug from 'slug'
 
 import { Article } from './article.entity'
 import { SimpleConsoleLogger } from 'typeorm'
+import { DatabaseError } from '../error'
 
 export const ArticleRepository = AppDataSource.getRepository(Article)
 
@@ -13,10 +14,33 @@ export class ArticleController {
     )
   }
 
-  public static createArticle(data, user) {
-    const slug = this.setSlug(data.title)
+  public static async createArticle(data, user) {
+    try {
+      const slug = this.setSlug(data.title)
 
-    return ArticleRepository.save({ ...data, slug, author: user })
+      const newArticle = await ArticleRepository.save({
+        ...data,
+        slug,
+        author: user,
+      })
+      return {
+        article: this.toGetJSON(newArticle),
+      }
+    } catch (e) {
+      return Promise.reject(new DatabaseError(e).toString())
+    }
+  }
+
+  public static async getArticle(slug) {
+    try {
+      const article = await ArticleRepository.findOneBy({ slug })
+
+      return {
+        article: ArticleController.toGetJSON(article),
+      }
+    } catch (e) {
+      return Promise.reject(new DatabaseError(e).toString())
+    }
   }
 
   public static toCreateJSON(article) {
