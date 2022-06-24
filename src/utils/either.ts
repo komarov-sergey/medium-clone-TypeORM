@@ -24,4 +24,13 @@ const tryCatch = f => {
   }
 }
 
-export { Left, Right, fromNullable, tryCatch }
+async function tryCatchAsync(f) {
+  try {
+    const result = await f()
+    return Promise.resolve(Right(result))
+  } catch (e) {
+    return Promise.reject(Left(e))
+  }
+}
+
+export { Left, Right, fromNullable, tryCatch, tryCatchAsync }
