@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 
 import { User } from './user.entity'
 import { DatabaseError } from '../error'
+import { tryCatch } from '../utils/either'
 
 export const UserRepository = AppDataSource.getRepository(User)
 
@@ -79,11 +80,10 @@ export class UserController {
   }
 
   public static async getCurrentUser(user) {
-    try {
-      return this.toCurrentUserJSON(user)
-    } catch (e) {
-      return Promise.reject(new DatabaseError(e).toString())
-    }
+    return tryCatch(() => this.toCurrentUserJSON(user)).fold(
+      e => Promise.reject(new DatabaseError(e).toString()),
+      d => d
+    )
   }
 
   public static async updateCurrentUser(currentUser, user) {
