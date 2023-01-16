@@ -5,15 +5,20 @@ import jwt from 'jsonwebtoken'
 import { User } from './user.entity'
 import { DatabaseError } from '../error'
 import { tryCatch, tryCatchAsync } from '../utils/either'
-import { isErrored } from 'stream'
+import Task from 'data.task'
 
 export const UserRepository = AppDataSource.getRepository(User)
 
 export class UserController {
-  private static salt = 'salt'
-  private static secret = 'secret'
+  private salt = 'salt'
+  private secret = 'secret'
+  private repo
 
-  private static setPassword(user, pass) {
+  public constructor(repo) {
+    this.repo = repo
+  }
+
+  private setPassword(user, pass) {
     const hash = crypto
       .pbkdf2Sync(pass, this.salt, 10000, 512, 'sha512')
       .toString('hex')
@@ -24,7 +29,7 @@ export class UserController {
     return user
   }
 
-  private static generateJWT(user) {
+  private generateJWT(user) {
     const today = new Date()
     const exp = new Date(today)
 
@@ -43,7 +48,7 @@ export class UserController {
     return user
   }
 
-  public static validPassword(pass: string, dbHash: string): boolean {
+  public validPassword(pass: string, dbHash: string): boolean {
     const hash = crypto
       .pbkdf2Sync(pass, this.salt, 10000, 512, 'sha512')
       .toString('hex')
@@ -51,7 +56,7 @@ export class UserController {
     return hash === dbHash
   }
 
-  public static async registerUser(userData) {
+  public async registerUser(userData) {
     try {
       let newUser = UserRepository.create({ ...userData })
       this.setPassword(newUser, userData.password)
@@ -64,15 +69,15 @@ export class UserController {
     }
   }
 
-  public static async loginUser(email: string, password: string) {
+  public async loginUser(email: string, password: string) {
     try {
-      let user = await UserRepository.findOneBy({ email })
+      let user = await this.repo.findOneBy({ email })
 
       if (!user || !this.validPassword(password, user.hash))
         return Promise.reject('Not valid email or password')
 
       this.generateJWT(user)
-      await UserRepository.save(user)
+      await this.repo.save(user)
 
       return this.toLoginJSON(user)
     } catch (e) {
@@ -80,26 +85,39 @@ export class UserController {
     }
   }
 
-  public static async getCurrentUser(user) {
+  public async getCurrentUser(user) {
     return tryCatch(() => this.toCurrentUserJSON(user)).fold(
       e => Promise.reject(new DatabaseError(e).toString()),
       d => d
     )
   }
 
-  public static async updateCurrentUser(currentUser, user) {
-    return (
-      await tryCatchAsync(() => {
-        throw new Error('Test')
-        return UserRepository.save({ ...currentUser, ...user })
+  public async updateCurrentUser(currentUser, user) {
+    // return (
+    //   await tryCatchAsync(() => {
+    //     throw new Error('Test')
+    //     return UserRepository.save({ ...currentUser, ...user })
+    //   })
+    // ).fold(
+    //   e => e.toString(),
+    //   updatedUser => this.toCurrentUserJSON(updatedUser)
+    // )
+    const updateUser = (currentUser, user) =>
+      Task((rej, res) => {
+        UserRepository.save({ ...currentUser, ...user })
+          .then(data => res(data))
+          .catch(err => rej(err))
       })
-    ).fold(
-      e => e.toString(),
-      updatedUser => this.toCurrentUserJSON(updatedUser)
-    )
+
+    return updateUser(currentUser, user)
+      .chain(userR => this.toCurrentUserJSON(userR))
+      .fork(
+        e => console.log(e),
+        user => user
+      )
   }
 
-  static toRegisterJSON(newUser) {
+  public toRegisterJSON(newUser) {
     return {
       user: {
         username: newUser.username,
@@ -111,7 +129,7 @@ export class UserController {
     }
   }
 
-  static toLoginJSON(user) {
+  public toLoginJSON(user) {
     return {
       user: {
         username: user.username,
@@ -123,7 +141,7 @@ export class UserController {
     }
   }
 
-  public static toCurrentUserJSON(user) {
+  public toCurrentUserJSON(user) {
     return {
       user: {
         username: user.username,
@@ -135,7 +153,7 @@ export class UserController {
     }
   }
 
-  public static toProfileJSON(user, id) {
+  public toProfileJSON(user, id) {
     return {
       username: user.username,
       bio: user.bio,
@@ -144,14 +162,14 @@ export class UserController {
     }
   }
 
-  public static async follow(user, id) {
+  public async follow(user, id) {
     if (user.following.indexOf(id) === -1)
       user.following = user.following.concat(id)
 
     return UserRepository.save(user)
   }
 
-  public static isFollowing(user, id) {
+  public isFollowing(user, id) {
     return user.following.some(
       followId => followId.toString() === id.toString()
     )

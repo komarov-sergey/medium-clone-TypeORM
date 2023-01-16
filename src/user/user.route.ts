@@ -2,14 +2,18 @@ import Router from 'koa-router'
 
 import auth from '../middleware/auth'
 import { PG_UNIQUE_VIOLATION } from '../utils/pgErrorCodes'
-import { UserController } from './user.repository'
+import { CreateUserController } from './ddd/CreateUserController'
+import { UserController, UserRepository } from './user.repository'
 
 /** TODO change this to class UserController
  * ! change current impl
  * ? https://khalilstemmler.com/articles/enterprise-typescript-nodejs/handling-errors-result-class/
  */
+const createUserController = new CreateUserController(UserRepository)
+const userController = new UserController(UserRepository)
 
 export default new Router()
+  .post('/test', createUserController.executeImpl)
   .post('/', registerUser)
   .post('/login', login)
   .get('/', auth, getCurrentUser)
@@ -22,7 +26,7 @@ async function registerUser(ctx) {
     },
   } = ctx
 
-  await handlePromise(UserController.registerUser(user), ctx)
+  await handlePromise(userController.registerUser(user), ctx)
 }
 
 async function login(ctx) {
@@ -34,7 +38,7 @@ async function login(ctx) {
     },
   } = ctx
 
-  await handlePromise(UserController.loginUser(email, password), ctx)
+  await handlePromise(userController.loginUser(email, password), ctx)
 }
 
 async function getCurrentUser(ctx) {
@@ -42,7 +46,7 @@ async function getCurrentUser(ctx) {
     state: { user },
   } = ctx
 
-  await handlePromise(UserController.getCurrentUser(user), ctx)
+  await handlePromise(userController.getCurrentUser(user), ctx)
 }
 
 async function updateCurrentUser(ctx) {
@@ -53,7 +57,7 @@ async function updateCurrentUser(ctx) {
     },
   } = ctx
 
-  await handlePromise(UserController.updateCurrentUser(currentUser, user), ctx)
+  await handlePromise(userController.updateCurrentUser(currentUser, user), ctx)
 }
 
 function handlePromise(promise, ctx) {
